@@ -1,0 +1,6 @@
+rules:
+  self-repository:
+    ignore:
+      # act 0.2.89 rejects the `$/...` self-repository syntax ("Must start
+      # with './'"); keep the workspace-relative form until act catches up.
+      - check.yml:12:11

@@ -1,0 +1,26 @@
+name: privacy
+
+on:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  privacy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Check for machine-local home directory paths
+        run: |
+          set -eu
+          matches=$(git grep -I -n -o -E '(/(Users|home)/|[A-Za-z]:\\Users\\)[A-Za-z0-9_.-]+' \
+            | grep -v -E '/(Users|home)/(user|runner)$' || true)
+          if [ -n "$matches" ]; then
+            echo "$matches" | while IFS= read -r line; do
+              echo "::error::machine-local path found: $line"
+            done
+            exit 1
+          fi
