@@ -14,14 +14,22 @@ Default community health files and shared GitHub Actions workflows for
   a machine-local home directory path (`/Users/<name>/...`,
   `/home/<name>/...`, or a Windows `C:\Users\<name>\...`), the same class of
   leak pentimento's own privacy tests guard against.
+- `.github/workflows/dependabot-automerge.yml`, a reusable workflow that
+  enables squash auto-merge on a Dependabot pull request when its update is a
+  patch or minor bump. The caller's required checks gate the merge; a major
+  bump is left for manual review.
 
-## Using the privacy workflow from another repo
+## Using a shared workflow from another repo
 
 ```yaml
 jobs:
   privacy:
     uses: kjiwa/.github/.github/workflows/privacy.yml@main
 ```
+
+The auto-merge caller is a `pull_request` workflow whose job needs
+`contents: write` and `pull-requests: write`, and the repo needs
+`allow_auto_merge` on (managed in terraform-github).
 
 This pins to `@main` rather than a SHA. Every other reusable or third-party
 action referenced from this account's repos is pinned to a full commit SHA;

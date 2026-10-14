@@ -16,6 +16,6 @@ and takes precedence over this one.
 ## This repo specifically
 
 Changes here are default community files and the shared workflows other
-repos call. A change to `.github/workflows/privacy.yml` affects every repo
+repos call. A change to `.github/workflows/privacy.yml` or `dependabot-automerge.yml` affects every repo
 that references it at `@main`; treat it with the same care as a
 security-relevant change.
