@@ -10,10 +10,12 @@ Default community health files and shared GitHub Actions workflows for
   automatically. A repo's own `.github/ISSUE_TEMPLATE` still overrides this
   one's.
 - `.github/workflows/privacy.yml`, a reusable (`workflow_call`) workflow that
-  checks out a repo's history-free working tree and fails the run if it finds
-  a machine-local home directory path (`/Users/<name>/...`,
-  `/home/<name>/...`, or a Windows `C:\Users\<name>\...`), the same class of
-  leak pentimento's own privacy tests guard against.
+  fails the run if the working tree holds a machine-local home directory path
+  (`/Users/<name>/...`, `/home/<name>/...`, or a Windows `C:\Users\<name>\...`),
+  a home-relative path (`~/` or `$HOME/`) that contains the repo owner's handle,
+  or a `com.<owner>.` identifier, the same class of leak pentimento's own
+  privacy tests guard against. On pull requests it also fails if any commit's
+  author or committer email is not a GitHub noreply address.
 - `.github/workflows/dependabot-automerge.yml`, a reusable workflow that
   enables squash auto-merge on a Dependabot pull request when its update is a
   patch or minor bump. The caller's required checks gate the merge; a major
