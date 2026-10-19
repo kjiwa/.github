@@ -12,6 +12,7 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          fetch-depth: ${{ github.event_name == 'pull_request' && '0' || '1' }}
           persist-credentials: false
       - name: Check for machine-local home directory paths
         run: |
@@ -21,6 +22,35 @@ jobs:
           if [ -n "$matches" ]; then
             echo "$matches" | while IFS= read -r line; do
               echo "::error::machine-local path found: $line"
+            done
+            exit 1
+          fi
+      - name: Check for home-relative paths and identifiers naming the owner
+        env:
+          OWNER: ${{ github.repository_owner }}
+        run: |
+          set -eu
+          pattern='(~|\$\{?HOME\}?|/(Users|home)/[^/[:space:]]+)/[^[:space:]"]*'"$OWNER"'|com\.'"$OWNER"'\.'
+          matches=$(git grep -I -n -o -E "$pattern" \
+            | grep -v -E ':/(Users|home)/(user|runner)/' || true)
+          if [ -n "$matches" ]; then
+            echo "$matches" | while IFS= read -r line; do
+              echo "::error::owner-specific path or identifier found: $line"
+            done
+            exit 1
+          fi
+      - name: Check commit author and committer emails
+        if: github.event_name == 'pull_request'
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -eu
+          matches=$(git log --format='%h %ae %ce' "$BASE_SHA..$HEAD_SHA" \
+            | awk '{ for (i = 2; i <= 3; i++) if ($i !~ /@users\.noreply\.github\.com$/ && $i != "noreply@github.com") { print; break } }')
+          if [ -n "$matches" ]; then
+            echo "$matches" | while IFS= read -r line; do
+              echo "::error::commit uses a non-noreply email: $line"
             done
             exit 1
           fi
