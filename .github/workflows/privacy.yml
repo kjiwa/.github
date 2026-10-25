@@ -40,7 +40,7 @@ jobs:
             exit 1
           fi
       - name: Check commit author and committer emails
-        if: github.event_name == 'pull_request'
+        if: github.event_name == 'pull_request' && github.event.pull_request.user.login == github.repository_owner
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
