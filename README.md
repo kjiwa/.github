@@ -16,7 +16,9 @@ Default community health files and shared GitHub Actions workflows for
   or a `com.<owner>.` identifier, the same class of leak pentimento's own
   privacy tests guard against. On pull requests opened by the repo owner it
   also fails if any commit's author or committer email is not a GitHub noreply
-  address.
+  address. It also runs gitleaks over the full history (a pinned release,
+  checked against its published sha256); a value that is not a secret is
+  listed in the caller's `.gitleaksignore`.
 - `.github/workflows/dependabot-automerge.yml`, a reusable workflow that
   enables squash auto-merge on a Dependabot pull request when its update is a
   patch or minor bump. The caller's required checks gate the merge; a major

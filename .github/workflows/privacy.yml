@@ -12,7 +12,7 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          fetch-depth: ${{ github.event_name == 'pull_request' && '0' || '1' }}
+          fetch-depth: 0
           persist-credentials: false
       - name: Check for machine-local home directory paths
         run: |
@@ -54,3 +54,21 @@ jobs:
             done
             exit 1
           fi
+      # The CLI, not gitleaks-action: the action calls the PR-commits API with
+      # GITHUB_TOKEN, which a caller's contents-only permissions deny, and
+      # Dependabot and fork PRs get a read-only token regardless. A flagged
+      # value that is not a secret goes in the caller's .gitleaksignore.
+      - name: Check history for secrets
+        env:
+          GITLEAKS_VERSION: 8.30.1
+        run: |
+          set -eu
+          cd "$RUNNER_TEMP"
+          base="https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}"
+          tarball="gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz"
+          curl -fsSLO "${base}/${tarball}"
+          curl -fsSLO "${base}/gitleaks_${GITLEAKS_VERSION}_checksums.txt"
+          grep " ${tarball}\$" "gitleaks_${GITLEAKS_VERSION}_checksums.txt" | sha256sum -c -
+          tar -xz -C /usr/local/bin -f "${tarball}" gitleaks
+          cd "$GITHUB_WORKSPACE"
+          gitleaks git . --redact --no-banner -v
